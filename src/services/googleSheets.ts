@@ -11,17 +11,20 @@ export interface SpreadsheetInfo {
 
 export const DEFAULT_SPREADSHEET_NAME = 'Data Akun Siswa - SD ASY - SYIFA 2';
 
+/**
+ * Standard Header Row aligned with Web App Table:
+ * NO | NAMA LENGKAP SISWA | NIK SISWA (16 DIGIT) | TANGGAL LAHIR (YYYY-MM-DD) | KELAS | NIS | USERNAME AKADEMIK | PASSWORD / SANDI | CATATAN
+ */
 export const HEADER_ROW = [
-  'ID Siswa',
-  'Nama Lengkap Siswa',
-  'NIK Siswa (16 Digit)',
-  'Tanggal Lahir (YYYY-MM-DD)',
-  'Kelas / Rombel',
+  'NO',
+  'NAMA LENGKAP SISWA',
+  'NIK SISWA (16 DIGIT)',
+  'TANGGAL LAHIR (YYYY-MM-DD)',
+  'KELAS',
   'NIS',
-  'Username Akademik',
-  'Password / Sandi',
-  'Catatan',
-  'Waktu Pembuatan / Update',
+  'USERNAME AKADEMIK',
+  'PASSWORD / SANDI',
+  'CATATAN',
 ];
 
 export const parseGoogleSheetId = (input: string): string | null => {
@@ -50,19 +53,20 @@ export const buildGoogleSheetUrl = (idOrUrl: string): string => {
 
 // Helper: Parse CSV text into row arrays, handling quoted fields
 export function parseCsvRows(csvText: string): string[][] {
+  const cleanText = csvText.replace(/^\uFEFF/, ''); // strip BOM
   const rows: string[][] = [];
   let currentRow: string[] = [];
   let currentField = '';
   let insideQuote = false;
 
-  for (let i = 0; i < csvText.length; i++) {
-    const char = csvText[i];
-    const nextChar = csvText[i + 1];
+  for (let i = 0; i < cleanText.length; i++) {
+    const char = cleanText[i];
+    const nextChar = cleanText[i + 1];
 
     if (char === '"') {
       if (insideQuote && nextChar === '"') {
         currentField += '"';
-        i++; // skip next quote
+        i++; // skip escaped quote
       } else {
         insideQuote = !insideQuote;
       }
@@ -110,7 +114,8 @@ export function parseCsvToStudents(csvText: string): Student[] {
   let passIdx = header.findIndex((h) => h.includes('pass') || h.includes('sandi'));
   let notesIdx = header.findIndex((h) => h.includes('catat') || h.includes('ket'));
 
-  // Fallback default index positions if headers are standard
+  // Fallback default index positions matching the standard 9 columns
+  // NO (0), NAMA (1), NIK (2), LAHIR (3), KELAS (4), NIS (5), USER (6), PASS (7), CATATAN (8)
   if (nameIdx === -1) nameIdx = 1;
   if (nikIdx === -1) nikIdx = 2;
   if (birthIdx === -1) birthIdx = 3;
@@ -124,23 +129,26 @@ export function parseCsvToStudents(csvText: string): Student[] {
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    const name = row[nameIdx] || '';
-    if (!name.trim()) continue;
+    const name = (row[nameIdx] || '').replace(/^[="']+|["']+$/g, '').trim();
+    if (!name) continue;
 
-    const rawNik = (row[nikIdx] || '').replace(/\D/g, '').slice(0, 16);
-    const rawBirth = (row[birthIdx] || '2017-05-12').trim();
-    const rawGrade = (row[gradeIdx] || 'Kelas 1A').trim();
-    const rawNis = (row[nisIdx] || '').trim();
-    const rawUser = (row[userIdx] || `siswa.${Date.now()}-${i}`).trim();
-    const rawPass = (row[passIdx] || 'Siswa#AsySyifa24').trim();
-    const rawNotes = (row[notesIdx] || '').trim();
+    // Clean NIK: strips ="...", '...', quotes, and non-digits
+    const rawNikVal = row[nikIdx] || '';
+    const rawNik = rawNikVal.replace(/\D/g, '').slice(0, 16);
+
+    const rawBirth = (row[birthIdx] || '2017-05-12').replace(/^[="']+|["']+$/g, '').trim();
+    const rawGrade = (row[gradeIdx] || 'Kelas 1A').replace(/^[="']+|["']+$/g, '').trim();
+    const rawNis = (row[nisIdx] || '').replace(/^[="']+|["']+$/g, '').trim();
+    const rawUser = (row[userIdx] || `siswa.${Date.now()}-${i}`).replace(/^[="']+|["']+$/g, '').trim();
+    const rawPass = (row[passIdx] || 'Siswa#AsySyifa24').replace(/^[="']+|["']+$/g, '').trim();
+    const rawNotes = (row[notesIdx] || '').replace(/^[="']+|["']+$/g, '').trim();
 
     students.push({
-      id: row[0] && row[0].startsWith('std-') ? row[0] : `std-gs-${Date.now()}-${i}`,
-      name: name.trim(),
+      id: `std-gs-${Date.now()}-${i}`,
+      name,
       nik: rawNik || undefined,
-      birthDate: rawBirth,
-      grade: rawGrade,
+      birthDate: rawBirth || '2017-05-12',
+      grade: rawGrade || 'Kelas 1A',
       nis: rawNis || undefined,
       username: rawUser,
       password: rawPass,
@@ -196,12 +204,13 @@ function doGet(e) {
   var students = [];
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i];
+    // Kolom 1 adalah Nama Lengkap Siswa
     if (!r[1]) continue;
     students.push({
-      id: String(r[0] || 'std-' + i),
+      id: 'std-' + i,
       name: String(r[1] || ''),
       nik: String(r[2] || '').replace(/\\D/g, ''),
-      birthDate: String(r[3] || ''),
+      birthDate: String(r[3] || '2017-05-12'),
       grade: String(r[4] || 'Kelas 1A'),
       nis: String(r[5] || ''),
       username: String(r[6] || ''),
@@ -219,19 +228,32 @@ function doPost(e) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     sheet.clearContents();
     
-    // Header
+    // Header Kolom Rapi Sesuai Tabel Web App
     sheet.appendRow([
-      'ID Siswa', 'Nama Lengkap Siswa', 'NIK Siswa (16 Digit)', 'Tanggal Lahir (YYYY-MM-DD)', 
-      'Kelas / Rombel', 'NIS', 'Username Akademik', 'Password / Sandi', 'Catatan', 'Waktu Update'
+      'NO', 
+      'NAMA LENGKAP SISWA', 
+      'NIK SISWA (16 DIGIT)', 
+      'TANGGAL LAHIR (YYYY-MM-DD)', 
+      'KELAS', 
+      'NIS', 
+      'USERNAME AKADEMIK', 
+      'PASSWORD / SANDI', 
+      'CATATAN'
     ]);
     
-    // Rows
+    // Baris Data Siswa
     for (var i = 0; i < students.length; i++) {
       var s = students[i];
       sheet.appendRow([
-        s.id, s.name, "'" + (s.nik || ''), s.birthDate || '', 
-        s.grade || '', s.nis || '', s.username || '', s.password || '', 
-        s.notes || '', new Date().toISOString()
+        i + 1,
+        s.name, 
+        "'" + (s.nik || ''), 
+        s.birthDate || '', 
+        s.grade || 'Kelas 1A', 
+        s.nis || '', 
+        s.username || '', 
+        s.password || '', 
+        s.notes || ''
       ]);
     }
     
