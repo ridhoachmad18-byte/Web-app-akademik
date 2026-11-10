@@ -24,7 +24,6 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [grade, setGrade] = useState('');
-  const [nis, setNis] = useState('');
   const [notes, setNotes] = useState('');
   
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +37,6 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
       setUsername(editingStudent.username);
       setPassword(editingStudent.password);
       setGrade(editingStudent.grade || '');
-      setNis(editingStudent.nis || '');
       setNotes(editingStudent.notes || '');
     } else {
       setName('');
@@ -47,7 +45,6 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
       setUsername('');
       setPassword('');
       setGrade(existingGrades.length > 0 ? existingGrades[0] : 'Kelas 1A');
-      setNis('');
       setNotes('');
     }
     setError(null);
@@ -111,7 +108,6 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
         username: username.trim(),
         password: password.trim(),
         grade: grade.trim() || 'Kelas 1A',
-        nis: nis.trim() || undefined,
         notes: notes.trim() || undefined,
       },
       editingStudent?.id
@@ -221,65 +217,45 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
             </div>
           </div>
 
-          {/* 3. Grid Kelas & NIS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Kelas / Rombel <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  list="grades-list"
-                  value={grade}
-                  onChange={(e) => setGrade(e.target.value)}
-                  placeholder="Contoh: Kelas 1A"
-                  className="w-full px-3 py-2 text-sm bg-white border border-teal-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-slate-900 placeholder:text-slate-400"
-                />
-                <datalist id="grades-list">
-                  {existingGrades.map((g) => (
-                    <option key={g} value={g} />
-                  ))}
-                  <option value="Kelas 1A" />
-                  <option value="Kelas 1B" />
-                  <option value="Kelas 2A" />
-                  <option value="Kelas 2B" />
-                  <option value="Kelas 3A" />
-                  <option value="Kelas 3B" />
-                  <option value="Kelas 4A" />
-                  <option value="Kelas 4B" />
-                  <option value="Kelas 5A" />
-                  <option value="Kelas 5B" />
-                  <option value="Kelas 6A" />
-                  <option value="Kelas 6B" />
-                </datalist>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                NIS (Nomor Induk Siswa)
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-teal-600">
-                  <Hash className="w-3.5 h-3.5" />
-                </div>
-                <input
-                  type="text"
-                  value={nis}
-                  onChange={(e) => setNis(e.target.value)}
-                  placeholder="240101"
-                  className="w-full pl-8 pr-3 py-2 text-sm font-mono bg-white border border-teal-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-slate-900 placeholder:text-slate-400"
-                />
-              </div>
+          {/* 3. Kelas */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Kelas / Rombel <span className="text-rose-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                list="grades-list"
+                value={grade}
+                onChange={(e) => setGrade(e.target.value)}
+                placeholder="Contoh: Kelas 1A"
+                className="w-full px-3 py-2 text-sm bg-white border border-teal-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-slate-900 placeholder:text-slate-400"
+              />
+              <datalist id="grades-list">
+                {existingGrades.map((g) => (
+                  <option key={g} value={g} />
+                ))}
+                <option value="Kelas 1A" />
+                <option value="Kelas 1B" />
+                <option value="Kelas 2A" />
+                <option value="Kelas 2B" />
+                <option value="Kelas 3A" />
+                <option value="Kelas 3B" />
+                <option value="Kelas 4A" />
+                <option value="Kelas 4B" />
+                <option value="Kelas 5A" />
+                <option value="Kelas 5B" />
+                <option value="Kelas 6A" />
+                <option value="Kelas 6B" />
+              </datalist>
             </div>
           </div>
 
-          {/* 4. Username */}
+          {/* 4. Username Akademik (NIS) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-slate-700">
-                Username Akademik <span className="text-rose-500">*</span>
+                Username Akademik (NIS) <span className="text-rose-500">*</span>
               </label>
               <button
                 type="button"
@@ -287,21 +263,24 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 className="text-[11px] text-teal-700 hover:text-teal-900 font-semibold inline-flex items-center gap-1 hover:underline cursor-pointer"
               >
                 <Sparkles className="w-3 h-3 text-teal-600" />
-                <span>Buat Otomatis dari Nama</span>
+                <span>Buat Otomatis</span>
               </button>
             </div>
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-teal-600">
+                <User className="w-4 h-4" />
+              </div>
               <input
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="fatih.pratama"
-                className="w-full px-3 py-2 text-sm font-mono bg-teal-50/30 border border-teal-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-slate-900 placeholder:text-slate-400"
+                placeholder="Contoh: 240101 (Nomor Induk Siswa)"
+                className="w-full pl-9 pr-3 py-2 text-sm font-mono font-semibold bg-white border border-teal-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-slate-900 placeholder:text-slate-400"
               />
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              Username yang dipakai siswa untuk login ke sistem akademik sekolah
+            <p className="text-[11px] text-slate-500 mt-1">
+              * Username login aplikasi akademik menggunakan NIS siswa.
             </p>
           </div>
 

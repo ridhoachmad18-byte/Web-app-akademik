@@ -28,6 +28,7 @@ interface StudentTableProps {
   onCopy: (text: string, label: string) => void;
   onOpenBatchImport: () => void;
   onExportCsv: () => void;
+  onExportExcel?: () => void;
   onAddNew: () => void;
 }
 
@@ -39,6 +40,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
   onCopy,
   onOpenBatchImport,
   onExportCsv,
+  onExportExcel,
   onAddNew,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,7 +53,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
   // Extract unique grades
   const grades = Array.from(new Set(students.map((s) => s.grade))).sort();
 
-  // Filter students (searches by Name, Tanggal Lahir, NIK, Username, or NIS)
+  // Filter students (searches by Name, Tanggal Lahir, NIK, or Username Akademik/NIS)
   const filteredStudents = students.filter((student) => {
     const q = searchQuery.toLowerCase().trim();
     const formattedDate = student.birthDate ? formatDateIndo(student.birthDate).toLowerCase() : '';
@@ -60,8 +62,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
       (student.birthDate && student.birthDate.includes(q)) ||
       formattedDate.includes(q) ||
       (student.nik && student.nik.includes(q)) ||
-      student.username.toLowerCase().includes(q) ||
-      (student.nis && student.nis.toLowerCase().includes(q));
+      student.username.toLowerCase().includes(q);
 
     const matchesGrade = selectedGrade === 'all' || student.grade === selectedGrade;
 
@@ -115,7 +116,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama siswa, NIK (16 digit), username, atau NIS..."
+            placeholder="Cari nama siswa, NIK (16 digit), atau username (NIS)..."
             className="w-full pl-9 pr-4 py-2 text-xs md:text-sm bg-teal-50/20 border border-teal-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500 focus:bg-white text-slate-900 placeholder:text-slate-400"
           />
           {searchQuery && (
@@ -200,16 +201,28 @@ export const StudentTable: React.FC<StudentTableProps> = ({
             <span className="hidden sm:inline">Import Massal</span>
           </button>
 
+          {/* Export to Excel (.xls) */}
+          <button
+            type="button"
+            onClick={onExportExcel || onExportCsv}
+            disabled={sortedStudents.length === 0}
+            className="px-3 py-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+            title="Download tabel Excel (.xls) ke samping bergaris rapi tanpa tanda kutip"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Unduh Excel (.xls)</span>
+          </button>
+
           {/* Export to CSV */}
           <button
             type="button"
             onClick={onExportCsv}
             disabled={sortedStudents.length === 0}
-            className="px-3 py-1.5 text-xs font-medium bg-white text-teal-900 border border-teal-200 hover:bg-teal-50 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
-            title="Download data tabel ke format CSV/Excel"
+            className="px-2.5 py-1.5 text-xs font-medium bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
+            title="Download CSV untuk Google Sheets"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="hidden sm:inline">Export Excel</span>
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">CSV</span>
           </button>
         </div>
       </div>
@@ -259,8 +272,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
                   <th className="py-3 px-4 min-w-[200px]">Nama Lengkap Siswa</th>
                   <th className="py-3 px-3.5 min-w-[170px]">NIK Siswa (16 Digit)</th>
                   <th className="py-3 px-3 w-28">Kelas</th>
-                  <th className="py-3 px-3 w-24">NIS</th>
-                  <th className="py-3 px-4 min-w-[160px]">Username Akademik</th>
+                  <th className="py-3 px-4 min-w-[170px]">Username Akademik (NIS)</th>
                   <th className="py-3 px-4 min-w-[190px]">Password / Sandi</th>
                   <th className="py-3 px-4 w-32 text-right">Aksi</th>
                 </tr>
@@ -348,12 +360,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
                         </span>
                       </td>
 
-                      {/* NIS */}
-                      <td className="py-3 px-3 font-mono tabular-nums text-slate-600">
-                        {student.nis || '-'}
-                      </td>
-
-                      {/* Username dengan Tombol Salin */}
+                      {/* Username (NIS) dengan Tombol Salin */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1.5">
                           <code className="px-2 py-0.5 rounded-md bg-teal-50/80 text-teal-800 border border-teal-200/80 font-mono text-xs font-semibold">

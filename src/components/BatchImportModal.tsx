@@ -16,6 +16,7 @@ import {
   generateRandomPassword,
   formatDateIndo,
   exportTemplateCsv,
+  exportTemplateExcel,
 } from '../utils/helpers';
 import { parseCsvRows } from '../services/googleSheets';
 
@@ -67,15 +68,15 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
     const dataRows = hasHeader ? rows.slice(1) : rows;
     const parsed: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>[] = [];
 
-    // Header index mapping if first row had headers
+    // Header index mapping for 8-column format:
+    // NO (0), NAMA (1), NIK (2), LAHIR (3), KELAS (4), USERNAME/NIS (5), PASS (6), CATATAN (7)
     let nameIdx = 1;
     let nikIdx = 2;
     let birthIdx = 3;
     let gradeIdx = 4;
-    let nisIdx = 5;
-    let userIdx = 6;
-    let passIdx = 7;
-    let notesIdx = 8;
+    let userIdx = 5;
+    let passIdx = 6;
+    let notesIdx = 7;
 
     if (hasHeader) {
       const h = rows[0].map((c) => c.toLowerCase().trim());
@@ -83,8 +84,7 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
       const fNik = h.findIndex((x) => x.includes('nik'));
       const fBirth = h.findIndex((x) => x.includes('lahir') || x.includes('tanggal'));
       const fGrade = h.findIndex((x) => x.includes('kelas') || x.includes('rombel'));
-      const fNis = h.findIndex((x) => x.includes('nis'));
-      const fUser = h.findIndex((x) => x.includes('user'));
+      const fUser = h.findIndex((x) => x.includes('user') || x.includes('nis'));
       const fPass = h.findIndex((x) => x.includes('pass') || x.includes('sandi'));
       const fNotes = h.findIndex((x) => x.includes('catat') || x.includes('ket') || x.includes('status'));
 
@@ -92,7 +92,6 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
       if (fNik !== -1) nikIdx = fNik;
       if (fBirth !== -1) birthIdx = fBirth;
       if (fGrade !== -1) gradeIdx = fGrade;
-      if (fNis !== -1) nisIdx = fNis;
       if (fUser !== -1) userIdx = fUser;
       if (fPass !== -1) passIdx = fPass;
       if (fNotes !== -1) notesIdx = fNotes;
@@ -106,20 +105,18 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
           nikIdx = 2;
           birthIdx = 3;
           gradeIdx = 4;
-          nisIdx = 5;
-          userIdx = 6;
-          passIdx = 7;
-          notesIdx = 8;
+          userIdx = 5;
+          passIdx = 6;
+          notesIdx = 7;
         } else {
           // Starts directly with Nama, NIK, ...
           nameIdx = 0;
           nikIdx = 1;
           birthIdx = 2;
           gradeIdx = 3;
-          nisIdx = 4;
-          userIdx = 5;
-          passIdx = 6;
-          notesIdx = 7;
+          userIdx = 4;
+          passIdx = 5;
+          notesIdx = 6;
         }
       }
     }
@@ -133,7 +130,6 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
       const rawNik = (r[nikIdx] || '').replace(/\D/g, '').slice(0, 16);
       const studentBirth = (r[birthIdx] || '2017-05-12').replace(/^[="']+|["']+$/g, '').trim();
       const studentGrade = (r[gradeIdx] || targetGrade || 'Kelas 1A').replace(/^[="']+|["']+$/g, '').trim();
-      const studentNis = (r[nisIdx] || '').replace(/^[="']+|["']+$/g, '').trim();
       const studentUser = (r[userIdx] || generateUsernameFromName(studentName)).replace(/^[="']+|["']+$/g, '').trim();
       const studentPass = (r[passIdx] || generateRandomPassword('AsySyifa')).replace(/^[="']+|["']+$/g, '').trim();
       const studentNotes = (r[notesIdx] || '').replace(/^[="']+|["']+$/g, '').trim();
@@ -143,7 +139,6 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
         birthDate: studentBirth || '2017-05-12',
         nik: rawNik || undefined,
         grade: studentGrade || targetGrade || 'Kelas 1A',
-        nis: studentNis || undefined,
         username: studentUser,
         password: studentPass,
         notes: studentNotes || undefined,
@@ -183,18 +178,22 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
     onClose();
   };
 
-  const handleDownloadTemplate = () => {
+  const handleDownloadExcelTemplate = () => {
+    exportTemplateExcel('SD ASY - SYIFA 2');
+  };
+
+  const handleDownloadCsvTemplate = () => {
     exportTemplateCsv('SD ASY - SYIFA 2');
   };
 
   const loadExample = () => {
     const sampleCsv =
-      `NO,NAMA LENGKAP SISWA,NIK SISWA (16 DIGIT),TANGGAL LAHIR (YYYY-MM-DD),KELAS,NIS,USERNAME AKADEMIK,PASSWORD / SANDI,CATATAN\n` +
-      `1,Muhammad Al-Fatih Pratama,3273012401010001,2017-05-12,Kelas 1A,240101,fatih.pratama,Siswa#AsySyifa24,Siswa Baru\n` +
-      `2,Aisyah Putri Azzahra,3273012401020002,2017-08-20,Kelas 1A,240102,aisyah.azzahra,Siswa#Aisyah24,Siswa Baru\n` +
-      `3,Bilal Ramadhan Putra,3273022302050003,2016-09-15,Kelas 2B,230205,bilal.ramadhan,Siswa#Bilal24,Reguler\n` +
-      `4,Khadijah Zahra Nabila,3273032203100004,2015-11-04,Kelas 3A,220310,khadijah.zahra,Siswa#Khadijah24,Reguler\n` +
-      `5,Rayyan Hamizan Khalif,3273042104150005,2014-03-22,Kelas 4A,210415,rayyan.khalif,Siswa#Rayyan24,Reguler`;
+      `NO,NAMA LENGKAP SISWA,NIK SISWA (16 DIGIT),TANGGAL LAHIR (YYYY-MM-DD),KELAS,USERNAME AKADEMIK (NIS),PASSWORD / SANDI,CATATAN\n` +
+      `1,Muhammad Al-Fatih Pratama,3273012401010001,2017-05-12,Kelas 1A,240101,Siswa#AsySyifa24,Siswa Baru\n` +
+      `2,Aisyah Putri Azzahra,3273012401020002,2017-08-20,Kelas 1A,240102,Siswa#Aisyah24,Siswa Baru\n` +
+      `3,Bilal Ramadhan Putra,3273022302050003,2016-09-15,Kelas 2B,230205,Siswa#Bilal24,Reguler\n` +
+      `4,Khadijah Zahra Nabila,3273032203100004,2015-11-04,Kelas 3A,220310,Siswa#Khadijah24,Reguler\n` +
+      `5,Rayyan Hamizan Khalif,3273042104150005,2014-03-22,Kelas 4A,210415,Siswa#Rayyan24,Reguler`;
     setText(sampleCsv);
     parseRawText(sampleCsv);
   };
@@ -231,22 +230,34 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
             <div className="space-y-1">
               <p className="font-bold flex items-center gap-1.5 text-teal-900">
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                <span>Susunan 9 Kolom Spreadsheet yang Sesuai:</span>
+                <span>Susunan 8 Kolom Spreadsheet yang Sesuai:</span>
               </p>
               <p className="text-[11px] text-teal-800 leading-relaxed font-mono">
-                NO · NAMA LENGKAP · NIK (16 DIGIT) · TANGGAL LAHIR · KELAS · NIS · USERNAME · PASSWORD · CATATAN
+                NO · NAMA LENGKAP · NIK (16 DIGIT) · TANGGAL LAHIR · KELAS · USERNAME AKADEMIK (NIS) · PASSWORD · CATATAN
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={handleDownloadTemplate}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-100/80 hover:bg-emerald-200 border border-emerald-300 rounded-lg transition-colors cursor-pointer shrink-0"
-              title="Unduh file template CSV kosong"
-            >
-              <Download className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Unduh Template CSV</span>
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleDownloadExcelTemplate}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                title="Unduh file template Excel (.xls) bersekat ke samping tanpa tanda kutip"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Unduh Template Excel (.xls)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDownloadCsvTemplate}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+                title="Unduh file template CSV"
+              >
+                <Download className="w-3 h-3 text-slate-500" />
+                <span>CSV</span>
+              </button>
+            </div>
           </div>
 
           {/* Action Row: Upload file or paste text */}
@@ -300,7 +311,7 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
                 setText(e.target.value);
                 setPreviewList([]);
               }}
-              placeholder={`Atau tempel baris data dari Google Sheets / Excel di sini...\nContoh:\n1, Aisyah Putri Azzahra, 3273012401020002, 2017-08-20, Kelas 1A, 240102, aisyah.azzahra, Siswa#Aisyah24, Siswa Baru`}
+              placeholder={`Atau tempel baris data dari Google Sheets / Excel di sini...\nContoh:\n1, Aisyah Putri Azzahra, 3273012401020002, 2017-08-20, Kelas 1A, 240102, Siswa#Aisyah24, Siswa Baru`}
               className="w-full p-3 text-xs font-mono bg-teal-50/20 border border-teal-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-teal-500 text-slate-900 placeholder:text-slate-400"
             />
           </div>
@@ -347,8 +358,7 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
                       <th className="py-2.5 px-3 min-w-[140px]">NIK (16 Digit)</th>
                       <th className="py-2.5 px-3 min-w-[100px]">Lahir</th>
                       <th className="py-2.5 px-3 w-24">Kelas</th>
-                      <th className="py-2.5 px-3 w-20">NIS</th>
-                      <th className="py-2.5 px-3 min-w-[120px]">Username</th>
+                      <th className="py-2.5 px-3 min-w-[140px]">Username Akademik (NIS)</th>
                       <th className="py-2.5 px-3 min-w-[120px]">Password</th>
                       <th className="py-2.5 px-3 min-w-[100px]">Catatan</th>
                     </tr>
@@ -371,8 +381,7 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
                         </td>
                         <td className="py-2 px-3 text-slate-600">{formatDateIndo(item.birthDate)}</td>
                         <td className="py-2 px-3 text-teal-800 font-medium">{item.grade}</td>
-                        <td className="py-2 px-3 font-mono text-slate-600">{item.nis || '-'}</td>
-                        <td className="py-2 px-3 font-mono text-teal-700 font-semibold">@{item.username}</td>
+                        <td className="py-2 px-3 font-mono text-teal-700 font-semibold">{item.username}</td>
                         <td className="py-2 px-3 font-mono text-slate-800">{item.password}</td>
                         <td className="py-2 px-3 text-slate-500 text-[11px]">{item.notes || '-'}</td>
                       </tr>

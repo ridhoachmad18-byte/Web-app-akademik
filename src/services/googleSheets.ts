@@ -13,7 +13,7 @@ export const DEFAULT_SPREADSHEET_NAME = 'Data Akun Siswa - SD ASY - SYIFA 2';
 
 /**
  * Standard Header Row aligned with Web App Table:
- * NO | NAMA LENGKAP SISWA | NIK SISWA (16 DIGIT) | TANGGAL LAHIR (YYYY-MM-DD) | KELAS | NIS | USERNAME AKADEMIK | PASSWORD / SANDI | CATATAN
+ * NO | NAMA LENGKAP SISWA | NIK SISWA (16 DIGIT) | TANGGAL LAHIR (YYYY-MM-DD) | KELAS | USERNAME AKADEMIK (NIS) | PASSWORD / SANDI | CATATAN
  */
 export const HEADER_ROW = [
   'NO',
@@ -21,8 +21,7 @@ export const HEADER_ROW = [
   'NIK SISWA (16 DIGIT)',
   'TANGGAL LAHIR (YYYY-MM-DD)',
   'KELAS',
-  'NIS',
-  'USERNAME AKADEMIK',
+  'USERNAME AKADEMIK (NIS)',
   'PASSWORD / SANDI',
   'CATATAN',
 ];
@@ -109,21 +108,19 @@ export function parseCsvToStudents(csvText: string): Student[] {
   let nikIdx = header.findIndex((h) => h.includes('nik'));
   let birthIdx = header.findIndex((h) => h.includes('lahir') || h.includes('tanggal'));
   let gradeIdx = header.findIndex((h) => h.includes('kelas') || h.includes('rombel'));
-  let nisIdx = header.findIndex((h) => h.includes('nis'));
-  let userIdx = header.findIndex((h) => h.includes('user') || h.includes('username'));
+  let userIdx = header.findIndex((h) => h.includes('user') || h.includes('username') || h.includes('nis'));
   let passIdx = header.findIndex((h) => h.includes('pass') || h.includes('sandi'));
   let notesIdx = header.findIndex((h) => h.includes('catat') || h.includes('ket'));
 
-  // Fallback default index positions matching the standard 9 columns
-  // NO (0), NAMA (1), NIK (2), LAHIR (3), KELAS (4), NIS (5), USER (6), PASS (7), CATATAN (8)
+  // Fallback default index positions matching the standard 8 columns
+  // NO (0), NAMA (1), NIK (2), LAHIR (3), KELAS (4), USERNAME AKADEMIK/NIS (5), PASS (6), CATATAN (7)
   if (nameIdx === -1) nameIdx = 1;
   if (nikIdx === -1) nikIdx = 2;
   if (birthIdx === -1) birthIdx = 3;
   if (gradeIdx === -1) gradeIdx = 4;
-  if (nisIdx === -1) nisIdx = 5;
-  if (userIdx === -1) userIdx = 6;
-  if (passIdx === -1) passIdx = 7;
-  if (notesIdx === -1) notesIdx = 8;
+  if (userIdx === -1) userIdx = 5;
+  if (passIdx === -1) passIdx = 6;
+  if (notesIdx === -1) notesIdx = 7;
 
   const students: Student[] = [];
 
@@ -138,7 +135,6 @@ export function parseCsvToStudents(csvText: string): Student[] {
 
     const rawBirth = (row[birthIdx] || '2017-05-12').replace(/^[="']+|["']+$/g, '').trim();
     const rawGrade = (row[gradeIdx] || 'Kelas 1A').replace(/^[="']+|["']+$/g, '').trim();
-    const rawNis = (row[nisIdx] || '').replace(/^[="']+|["']+$/g, '').trim();
     const rawUser = (row[userIdx] || `siswa.${Date.now()}-${i}`).replace(/^[="']+|["']+$/g, '').trim();
     const rawPass = (row[passIdx] || 'Siswa#AsySyifa24').replace(/^[="']+|["']+$/g, '').trim();
     const rawNotes = (row[notesIdx] || '').replace(/^[="']+|["']+$/g, '').trim();
@@ -149,7 +145,6 @@ export function parseCsvToStudents(csvText: string): Student[] {
       nik: rawNik || undefined,
       birthDate: rawBirth || '2017-05-12',
       grade: rawGrade || 'Kelas 1A',
-      nis: rawNis || undefined,
       username: rawUser,
       password: rawPass,
       notes: rawNotes || undefined,
@@ -212,10 +207,9 @@ function doGet(e) {
       nik: String(r[2] || '').replace(/\\D/g, ''),
       birthDate: String(r[3] || '2017-05-12'),
       grade: String(r[4] || 'Kelas 1A'),
-      nis: String(r[5] || ''),
-      username: String(r[6] || ''),
-      password: String(r[7] || ''),
-      notes: String(r[8] || '')
+      username: String(r[5] || ''),
+      password: String(r[6] || ''),
+      notes: String(r[7] || '')
     });
   }
   return ContentService.createTextOutput(JSON.stringify(students)).setMimeType(ContentService.MimeType.JSON);
@@ -228,15 +222,14 @@ function doPost(e) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     sheet.clearContents();
     
-    // Header Kolom Rapi Sesuai Tabel Web App
+    // Header Kolom Rapi Sesuai Tabel Web App (8 Kolom Bersih)
     sheet.appendRow([
       'NO', 
       'NAMA LENGKAP SISWA', 
       'NIK SISWA (16 DIGIT)', 
       'TANGGAL LAHIR (YYYY-MM-DD)', 
       'KELAS', 
-      'NIS', 
-      'USERNAME AKADEMIK', 
+      'USERNAME AKADEMIK (NIS)', 
       'PASSWORD / SANDI', 
       'CATATAN'
     ]);
@@ -250,7 +243,6 @@ function doPost(e) {
         "'" + (s.nik || ''), 
         s.birthDate || '', 
         s.grade || 'Kelas 1A', 
-        s.nis || '', 
         s.username || '', 
         s.password || '', 
         s.notes || ''

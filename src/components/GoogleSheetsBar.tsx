@@ -24,6 +24,7 @@ interface GoogleSheetsBarProps {
   onSyncWebhook: (action: 'pull' | 'push') => void;
   onPullFromSheetUrl: () => void;
   onExportCsv: () => void;
+  onExportExcel?: () => void;
   onOpenBatchImport: () => void;
   onCopyText: (text: string, label: string) => void;
 }
@@ -36,6 +37,7 @@ export const GoogleSheetsBar: React.FC<GoogleSheetsBarProps> = ({
   onSyncWebhook,
   onPullFromSheetUrl,
   onExportCsv,
+  onExportExcel,
   onOpenBatchImport,
   onCopyText,
 }) => {
@@ -133,12 +135,22 @@ export const GoogleSheetsBar: React.FC<GoogleSheetsBarProps> = ({
 
           <button
             type="button"
+            onClick={onExportExcel || onExportCsv}
+            className="px-3 py-2 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Download tabel Excel (.xls) bergaris ke samping tanpa tanda kutip"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Unduh Excel (.xls)</span>
+          </button>
+
+          <button
+            type="button"
             onClick={onExportCsv}
-            className="px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
-            title="Download CSV untuk dibuka di Google Sheets atau Excel"
+            className="px-2.5 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Download file CSV"
           >
             <Download className="w-3.5 h-3.5 text-slate-600" />
-            <span>Unduh CSV</span>
+            <span>CSV</span>
           </button>
 
           <button

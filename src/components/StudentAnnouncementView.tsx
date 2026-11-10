@@ -120,7 +120,7 @@ export const StudentAnnouncementView: React.FC<StudentAnnouncementViewProps> = (
 
   const handleCopyAll = () => {
     if (!activeStudent) return;
-    const allText = `PENGUMUMAN AKUN AKADEMIK ${schoolConfig.schoolName.toUpperCase()}\nNama: ${activeStudent.name}\nNIK: ${activeStudent.nik || '-'}\nKelas: ${activeStudent.grade}\nNIS: ${activeStudent.nis || '-'}\nUsername: ${activeStudent.username}\nPassword: ${activeStudent.password}\nPortal: ${schoolConfig.academicAppUrl}`;
+    const allText = `PENGUMUMAN AKUN AKADEMIK ${schoolConfig.schoolName.toUpperCase()}\nNama: ${activeStudent.name}\nNIK: ${activeStudent.nik || '-'}\nKelas: ${activeStudent.grade}\nUsername (NIS): ${activeStudent.username}\nPassword: ${activeStudent.password}\nPortal: ${schoolConfig.academicAppUrl}`;
     onCopy(allText, 'Data Login Lengkap');
     setCopiedAll(true);
     setTimeout(() => setCopiedAll(false), 1500);
@@ -283,12 +283,6 @@ export const StudentAnnouncementView: React.FC<StudentAnnouncementViewProps> = (
                     </span>
                     <span aria-hidden="true">·</span>
                     <span>{activeStudent.grade}</span>
-                    {activeStudent.nis && (
-                      <>
-                        <span aria-hidden="true">·</span>
-                        <span className="font-mono">NIS: {activeStudent.nis}</span>
-                      </>
-                    )}
                     {activeStudent.birthDate && (
                       <>
                         <span aria-hidden="true">·</span>
@@ -328,9 +322,9 @@ export const StudentAnnouncementView: React.FC<StudentAnnouncementViewProps> = (
                 <div>
                   <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
                     <span className="font-semibold uppercase tracking-wider text-[11px] text-teal-800">
-                      Username Akademik
+                      Username Akademik (NIS)
                     </span>
-                    <span className="text-teal-700 font-semibold">ID Login</span>
+                    <span className="text-teal-700 font-semibold">ID Login Siswa</span>
                   </div>
                   <div className="bg-white border-2 border-teal-200 rounded-lg p-3 flex items-center justify-between shadow-2xs">
                     <code className="text-base sm:text-lg font-mono font-bold text-teal-800 tracking-wide select-all">

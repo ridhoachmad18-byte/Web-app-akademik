@@ -57,7 +57,7 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
               </span>
               <h3 className="text-base font-bold leading-tight">{student.name}</h3>
               <p className="text-xs text-teal-100 mt-0.5">
-                {student.grade} {student.nik ? `· NIK: ${student.nik}` : ''} {student.nis ? `· NIS ${student.nis}` : ''}
+                {student.grade} {student.nik ? `· NIK: ${student.nik}` : ''}
               </p>
             </div>
           </div>
@@ -75,7 +75,7 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
             {/* Username */}
             <div>
               <span className="text-[11px] text-teal-800 font-semibold block mb-1">
-                Username Akademik
+                Username Akademik (NIS)
               </span>
               <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-teal-200">
                 <code className="text-xs font-mono font-bold text-teal-800">

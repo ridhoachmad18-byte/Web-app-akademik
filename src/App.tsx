@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Student, SchoolConfig } from './types/student';
 import { INITIAL_STUDENTS, DEFAULT_SCHOOL_CONFIG } from './data/initialData';
-import { copyToClipboard, exportStudentsToCsv } from './utils/helpers';
+import { copyToClipboard, exportStudentsToCsv, exportStudentsToExcel } from './utils/helpers';
 import { Navbar } from './components/Navbar';
 import { StudentAnnouncementView } from './components/StudentAnnouncementView';
 import { StudentTable } from './components/StudentTable';
@@ -379,9 +379,14 @@ export default function App() {
     }
   };
 
+  const handleExportExcel = () => {
+    exportStudentsToExcel(students, schoolConfig.schoolName);
+    addToast('success', 'File Tabel Excel (.xls) Diunduh', 'Tabel bergaris ke samping tanpa tanda kutip siap dibuka di Excel / Google Sheets.');
+  };
+
   const handleExportCsv = () => {
     exportStudentsToCsv(students, schoolConfig.schoolName);
-    addToast('success', 'File Excel/CSV Diunduh', 'Data seluruh akun siswa berhasil diekspor.');
+    addToast('success', 'File CSV Diunduh', 'Data seluruh akun siswa berhasil diekspor.');
   };
 
   const handleResetSampleData = () => {
@@ -547,6 +552,7 @@ export default function App() {
                 onSaveLinks={handleSaveLinks}
                 onSyncWebhook={handleSyncWebhook}
                 onPullFromSheetUrl={handlePullFromSheetUrl}
+                onExportExcel={handleExportExcel}
                 onExportCsv={handleExportCsv}
                 onOpenBatchImport={() => setIsBatchModalOpen(true)}
                 onCopyText={handleCopy}
@@ -564,6 +570,7 @@ export default function App() {
                   onViewCard={(student) => setViewingDetailStudent(student)}
                   onCopy={handleCopy}
                   onOpenBatchImport={() => setIsBatchModalOpen(true)}
+                  onExportExcel={handleExportExcel}
                   onExportCsv={handleExportCsv}
                   onAddNew={() => {
                     setEditingStudent(null);

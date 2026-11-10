@@ -233,7 +233,7 @@ export const PrintSlipsModal: React.FC<PrintSlipsModalProps> = ({
                     Kelas / Rombel
                   </span>
                   <p className="font-medium text-teal-900 text-xs">
-                    {student.grade} {student.nis ? `· NIS ${student.nis}` : ''}
+                    {student.grade}
                   </p>
                 </div>
               </div>
@@ -241,7 +241,7 @@ export const PrintSlipsModal: React.FC<PrintSlipsModalProps> = ({
               {/* Credentials Box */}
               <div className="bg-teal-50/50 border border-teal-200 rounded-lg p-2.5 space-y-1.5 text-xs font-mono">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 text-[11px] font-sans">Username:</span>
+                  <span className="text-slate-500 text-[11px] font-sans">Username (NIS):</span>
                   <strong className="text-teal-800 bg-white px-2 py-0.5 rounded border border-teal-200">
                     {student.username}
                   </strong>

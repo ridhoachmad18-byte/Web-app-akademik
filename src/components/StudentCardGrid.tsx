@@ -40,7 +40,7 @@ export const StudentCardGrid: React.FC<StudentCardGridProps> = ({
     const matchesSearch =
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (student.nis && student.nis.toLowerCase().includes(searchQuery.toLowerCase()));
+      (student.nik && student.nik.includes(searchQuery));
 
     const matchesGrade = selectedGrade === 'all' || student.grade === selectedGrade;
 
@@ -126,12 +126,6 @@ export const StudentCardGrid: React.FC<StudentCardGridProps> = ({
                         </h4>
                         <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
                           <span className="text-teal-700 font-medium">{student.grade}</span>
-                          {student.nis && (
-                            <>
-                              <span aria-hidden="true">·</span>
-                              <span className="font-mono tabular-nums">NIS: {student.nis}</span>
-                            </>
-                          )}
                         </div>
                         {student.nik && (
                           <p className="text-[11px] font-mono font-semibold text-teal-900 mt-0.5">
@@ -170,7 +164,7 @@ export const StudentCardGrid: React.FC<StudentCardGridProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
                         <AtSign className="w-3.5 h-3.5 text-teal-600" />
-                        <span>Username:</span>
+                        <span>Username (NIS):</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="font-mono font-bold text-teal-800 bg-white px-2 py-0.5 rounded border border-teal-200">
